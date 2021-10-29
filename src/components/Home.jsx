@@ -253,6 +253,100 @@ const IconsWrapper = styled.div`
   }
 `
 
+const ToDoDetail = styled.div`
+  position: absolute;
+  width: 50%;
+  height: 80%;
+  display: none;
+`
+
+
+const ToDoDetailWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: #25273C;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+`
+
+const CloseButton = styled.div`
+  width: 98%;
+  height: 27px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  background-color: #25273C;
+  margin: 7px;
+  border: none;
+  img{
+    cursor: pointer;
+    width: 27px;
+    background-color: #25273C;
+    height: 27px;
+    justify-content: flex-end;
+  }
+`
+const Forms = styled.div`
+  padding: 0px 75px;
+  width: auto;
+  height: auto;
+  background-color: #25273C;
+`
+
+const Detail = styled.div`
+  margin-bottom: 15px;
+  background-color: #25273C;
+
+  h1 {
+    background-color: #25273C;
+  }
+
+  input {
+    height: 40px;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    width: 90%;
+    padding: 2px 20px;
+  }
+
+  textarea {
+    border: none;
+    height: 150px;
+    outline: none;
+    border-radius: 5px;
+    width: 90%;
+    padding: 5px 20px;
+  }
+`
+
+const SaveButton = styled.div`
+  display: flex;
+  height: 100px;
+  background-color: #25273C;
+  justify-content: center;
+
+  button{
+    cursor: pointer;
+    margin-top: 20px;
+    width: 200px;
+    height: 70px;
+    border-radius: 40px;
+    border: none;
+    background-color: #3269c9;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    transition: all 500ms ease-in-out;
+
+    &:hover{
+      transition: all 500ms ease-in-out;
+      background-color: #4477cf;
+    }
+  }
+`
+
 
 const Home = () => {
   return (
@@ -338,6 +432,34 @@ const Home = () => {
             </ToDoItem>
           </ToDoItemsWrapper>
 
+          <ToDoDetail>
+            <ToDoDetailWrapper>
+              <CloseButton>
+                <img src="/images/close.png" />
+              </CloseButton>
+              <Forms>
+                <Detail>
+                  <h1>Title: </h1>
+                  <input placeholder="task1" />
+                </Detail>
+                <Detail>
+                  <h1>Description: </h1>
+                  <textarea placeholder="Description" />
+                </Detail>
+                <Detail>
+                  <h1>Link: </h1>
+                  <input placeholder="raidr.dev" />
+                </Detail>
+                <Detail>
+                  <h1>Date: </h1>
+                  <input placeholder="29/10/2021" />
+                </Detail>
+                <SaveButton>
+                  <button type="submit">SAVE</button>
+                </SaveButton>
+              </Forms>
+            </ToDoDetailWrapper>
+          </ToDoDetail>
         </Right>
       </Wrapper>
     </Container>
