@@ -1,3 +1,5 @@
+### This project is a v2 of my first web https://to-do-app-ecru.vercel.app/ applying every that I have learned in this time that I have been developing websites (3 months) using React.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
