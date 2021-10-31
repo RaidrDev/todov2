@@ -1,6 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import Header from '../components/Header'
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import app from "../firebase"
+import { useHistory } from 'react-router'
+
+const auth = getAuth(app);
 
 const Container = styled.div`
   width: 100vw;
@@ -232,6 +237,101 @@ const LoginButton = styled.button`
 
 
 const Register = () => {
+
+  const history = useHistory();
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, see docs for a list of available properties
+      // https://firebase.google.com/docs/reference/js/firebase.User
+      history.push("/");
+    } else {
+      // User is signed out
+    }
+  });
+
+  const SignInWithPopup = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+        history.push("/");
+      }).catch((error) => {
+        const errorMessage = error.message;
+        window.alert(errorMessage);
+      });
+  }
+
+  const handleSignin = () => {
+
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        history.push("/");
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        window.alert(errorMessage);
+      });
+  }
+
+  const handleOpen = () => {
+    document.getElementById("login").style.display = "flex";
+  }
+
+  const handleClose = () => {
+    document.getElementById("login").style.display = "none";
+  }
+
+  function handleRegister(e) {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPass = document.getElementById("confirmPass").value;
+
+    if (password === confirmPass) {
+      createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        history.push("/");
+      })
+        .catch((error) => {
+          const errorMessage = error.message;
+          window.alert(errorMessage);
+        });
+    } else {
+      window.alert("Las contraseñas no son iguales!");
+    }
+  }
+
+  const handleForgot = () => {
+
+    const email = document.getElementById("loginEmail").value;
+
+    if (email === "") {
+      window.alert("Introduce el email que quieras recuperar la contraseña.")
+    } else {
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          // Password reset email sent!
+          window.alert("Password Reset Email Sent!")
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          window.alert(errorMessage);
+        });
+    }
+  }
+
+
   return (
     <Container>
       <Header />
@@ -247,36 +347,36 @@ const Register = () => {
         <Right>
           <TitleR>CREATE AN ACCOUNT!</TitleR>
           <Inputs>
-            <input type="email" placeholder="email" />
-            <input type="password" placeholder="password" />
-            <input type="password" placeholder="confirm password" />
+            <input type="email" id="email" placeholder="email" />
+            <input type="password" id="password" placeholder="password" />
+            <input type="password" id="confirmPass" placeholder="confirm password" />
           </Inputs>
           <ButtonWrapper>
-            <RegisterButton>REGISTER</RegisterButton>
-            <GoogleButton>
+            <RegisterButton onClick={handleRegister}>REGISTER</RegisterButton>
+            <GoogleButton onClick={SignInWithPopup}>
               <p>Sign In With Google</p>
               <img src="/images/google-icon.png" />
             </GoogleButton>
           </ButtonWrapper>
           <Links>
-            <p>ALREADY HAVE AN ACCOUNT? <u>LOGIN</u></p>
+            <p onClick={handleOpen}>ALREADY HAVE AN ACCOUNT? <u>LOGIN</u></p>
           </Links>
         </Right>
 
-        <LoginWrap>
+        <LoginWrap id="login">
           <Login>
-            <CloseButton>
+            <CloseButton onClick={handleClose}>
               <img src="/images/close.png" />
             </CloseButton>
             <TitleL>LOGIN</TitleL>
             <InputsLogin>
-              <input type="email" placeholder="email" />
-              <input type="password" placeholder="password" />
+              <input type="email" id="loginEmail" placeholder="email" />
+              <input type="password" id="loginPassword" placeholder="password" />
             </InputsLogin>
             <LinksLogin>
-              <p>YOU FORGOT YOUR PASSWORD?</p>
+              <p onClick={handleForgot}>YOU FORGOT YOUR PASSWORD?</p>
             </LinksLogin>
-            <LoginButton>
+            <LoginButton onClick={handleSignin}>
               >
             </LoginButton>
           </Login>

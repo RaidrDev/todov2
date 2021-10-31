@@ -1,6 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import MenuIcon from '@mui/icons-material/Menu';
+import app from "../firebase"
+import { useHistory } from 'react-router'
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+
+const auth = getAuth(app);
 
 const Container = styled.div`
   height: 50px;
@@ -85,6 +90,29 @@ const Button = styled.button`
 `
 
 const Header = () => {
+  const history = useHistory();
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+      } else {
+        // User is signed out
+        history.push("/register")
+      }
+    });
+  }, [])
+
+
+  const handleSignout = () => {
+    signOut(auth).then(() => {
+      history.push("/register")
+    }).catch((error) => {
+      // An error happened.
+    });
+  }
+
   return (
     <Container>
       <Left>
@@ -93,12 +121,15 @@ const Header = () => {
         </Menu>
         <Logo>TODO.</Logo>
       </Left>
-      <Right>
-        <Button>
-          SIGN OUT
-        </Button>
-        <Icon src="https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
-      </Right>
+      {true && <>
+        <Right>
+          <Button onClick={handleSignout}>
+            SIGN OUT
+          </Button>
+          <Icon src="https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
+        </Right>
+      </>}
+
     </Container>
   )
 }
