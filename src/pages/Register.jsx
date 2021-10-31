@@ -27,6 +27,10 @@ const Left = styled.div`
   margin-top: 50px;
   margin-bottom: 50px;
   border-right: 1px solid white;
+
+  @media screen and (max-width: 468px){
+    display: none;
+  }
 `
 
 const Title = styled.h1`
@@ -65,6 +69,10 @@ const Right = styled.div`
 const TitleR = styled.h1`
   font-weight: 200;
   font-size: 50px;
+
+  @media screen and (max-width: 468px){
+    font-size: 32px;
+  }
 `
 
 const Inputs = styled.div`
@@ -81,6 +89,11 @@ const Inputs = styled.div`
     outline: none;
     border-bottom: 1px solid white;
     padding: 10px;
+
+    @media screen and (max-width: 468px){
+      width: 300px;
+      font-size: 13px;
+    }
   }
 `
 
@@ -103,6 +116,11 @@ const RegisterButton = styled.button`
     transition: all 500ms ease-in-out;
     transform: scale(1.05);
   }
+
+  @media screen and (max-width: 468px){
+    padding: 16px 100px;
+
+  }
 `
 
 const GoogleButton = styled.button`
@@ -123,6 +141,10 @@ const GoogleButton = styled.button`
     margin-left: 5px;
     width: 20px;
   }
+
+  @media screen and (max-width: 468px){
+    padding: 15px 90px;
+  }
 `
 
 const Links = styled.div`
@@ -132,6 +154,11 @@ const Links = styled.div`
   p{
     cursor: pointer;
     font-weight: 200;
+  }
+
+  @media screen and (max-width: 468px){
+    margin-top: 50px;
+    font-size: 14px;
   }
 `
 
@@ -156,6 +183,11 @@ const Login = styled.div`
   flex-direction: column;
   align-items: center;
   z-index: 2;
+
+  @media screen and (max-width: 468px){
+    height: 520px;
+    width: 300px;
+  }
 `
 
 const TitleL = styled.div`
@@ -164,6 +196,10 @@ const TitleL = styled.div`
   display: flex;
   width: 100%;
   justify-content: center;
+
+  @media screen and (max-width: 468px){
+    font-size: 35px;
+  }
 `
 
 const CloseButton = styled.div`
@@ -177,6 +213,12 @@ const CloseButton = styled.div`
     cursor: pointer;
     width: 27px;
     justify-content: flex-end;
+  }
+
+  @media screen and (max-width: 468px){
+   img{
+     width: 20px;
+   } 
   }
 `
 
@@ -197,6 +239,12 @@ const InputsLogin = styled.div`
     border-bottom: 1px solid white;
     padding: 10px;
   }
+
+  @media screen and (max-width: 468px){
+    input{
+      width: 200px
+    } 
+  }
 `
 
 const LinksLogin = styled.div`
@@ -213,6 +261,10 @@ const LinksLogin = styled.div`
       transition: all 250ms ease-in-out;
       color: rgba(255,255,255,1);
     }
+  }
+
+  @media screen and (max-width: 468px){
+    font-size: 13px;
   }
 `
 
@@ -232,6 +284,12 @@ const LoginButton = styled.button`
   &:hover{
     transition: all 500ms ease-in-out;
     transform: scale(1.08);
+  }
+
+  @media screen and (max-width: 468px){
+    width: 85px;
+    height: 85px;
+    border-radius: 30px;
   }
 `
 
