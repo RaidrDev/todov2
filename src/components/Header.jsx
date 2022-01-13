@@ -4,6 +4,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import app from "../firebase"
 import { useHistory } from 'react-router'
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  setUserLogin,
+  setSignOut,
+  selectUserEmail,
+} from '../redux/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const auth = getAuth(app);
 
@@ -91,22 +97,27 @@ const Button = styled.button`
 
 const Header = () => {
   const history = useHistory();
+  const userEmail = useSelector(selectUserEmail);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
+        dispatch(setUserLogin({
+          name: user.displayName,
+          email: user.email,
+        }))
       } else {
         // User is signed out
         history.push("/register")
       }
     });
-  }, [])
+  }, [history, dispatch])
 
 
   const handleSignout = () => {
     signOut(auth).then(() => {
+      dispatch(setSignOut());
       history.push("/register")
     }).catch((error) => {
       // An error happened.
@@ -116,12 +127,15 @@ const Header = () => {
   return (
     <Container>
       <Left>
-        <Menu>
-          <MenuIcon style={{ fontSize: "35px" }} />
-        </Menu>
+        {userEmail && <>
+          <Menu>
+            <MenuIcon style={{ fontSize: "35px" }} />
+          </Menu>
+        </>
+        }
         <Logo>TODO.</Logo>
       </Left>
-      {true && <>
+      {userEmail && <>
         <Right>
           <Button onClick={handleSignout}>
             SIGN OUT

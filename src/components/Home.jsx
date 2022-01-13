@@ -1,7 +1,164 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import app from "../firebase"
+import {
+  selectUserEmail,
+} from '../redux/userSlice';
+import { getFirestore, collection, getDocs, where, query } from 'firebase/firestore'
+import { getAuth } from 'firebase/auth';
+import { useSelector } from 'react-redux';
 
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+const Home = () => {
+
+  const [tasks, setTasks] = useState([]);
+  const userEmail = useSelector(selectUserEmail);
+
+  getTasks("School");
+
+  async function getTasks(workspace) {
+    const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", workspace));
+
+    const querySnapshot = await getDocs(q);
+    let tasks = [];
+    querySnapshot.forEach((doc) => {
+      tasks.push({
+        id: doc.id,
+        ...doc.data()
+      })
+      console.log(tasks);
+    })
+  }
+
+
+  const handleOpen = () => {
+    document.getElementById("detail").style.display = "flex";
+  }
+
+  const handleClose = () => {
+    document.getElementById("detail").style.display = "none";
+  }
+
+  return (
+    <Container>
+      <Wrapper>
+        <SideBar>
+          <Title>WORKSPACE</Title>
+
+          <Workspace active="true">
+            School
+            <img src="/images/close.png" />
+          </Workspace>
+
+          <Workspace active="false">
+            Work
+            <img src="/images/close.png" />
+          </Workspace>
+
+          <Workspace active="false">
+            Compra
+            <img src="/images/close.png" />
+          </Workspace>
+
+          <AddWorkspace>
+            <AddCircleIcon style={{ marginBottom: "10px", opacity: "0.35", fontSize: "30px" }} />
+          </AddWorkspace>
+        </SideBar>
+
+        <Right>
+          <TitleWS>School</TitleWS>
+          <ToDo>
+            <CheckMark />
+            <ToDoInput>
+              <ToDoForm>
+                <input placeholder="Crea una nueva tarea..." />
+              </ToDoForm>
+            </ToDoInput>
+          </ToDo>
+
+          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
+            <ToDoItem>
+              <CheckMarkItem />
+              <TextWrapper>
+                <span>
+                  task 1
+                </span>
+              </TextWrapper>
+              <IconsWrapper>
+                <img src="/images/link.png" alt="" />
+                <img src="/images/close.png" alt="" />
+              </IconsWrapper>
+            </ToDoItem>
+          </ToDoItemsWrapper>
+
+          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
+            <ToDoItem>
+              <CheckMarkItem />
+              <TextWrapper>
+                <span>
+                  task 2
+                </span>
+              </TextWrapper>
+              <IconsWrapper>
+                <img src="/images/link.png" alt="" />
+                <img src="/images/close.png" alt="" />
+              </IconsWrapper>
+            </ToDoItem>
+          </ToDoItemsWrapper>
+
+          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
+            <ToDoItem>
+              <CheckMarkItem />
+              <TextWrapper>
+                <span>
+                  task 3
+                </span>
+              </TextWrapper>
+
+              <IconsWrapper>
+                <img src="/images/link.png" alt="" />
+                <img src="/images/close.png" alt="" />
+              </IconsWrapper>
+            </ToDoItem>
+          </ToDoItemsWrapper>
+
+          <ToDoDetail id="detail">
+            <ToDoDetailWrapper>
+              <CloseButton onClick={handleClose}>
+                <img src="/images/close.png" />
+              </CloseButton>
+              <Forms>
+                <Detail>
+                  <h1>Title: </h1>
+                  <input placeholder="task1" />
+                </Detail>
+                <Detail>
+                  <h1>Description: </h1>
+                  <textarea placeholder="Description" />
+                </Detail>
+                <Detail>
+                  <h1>Link: </h1>
+                  <input placeholder="raidr.dev" />
+                </Detail>
+                <Detail>
+                  <h1>Date: </h1>
+                  <input placeholder="29/10/2021" />
+                </Detail>
+                <SaveButton>
+                  <button type="submit">SAVE</button>
+                </SaveButton>
+              </Forms>
+            </ToDoDetailWrapper>
+          </ToDoDetail>
+        </Right>
+      </Wrapper>
+    </Container>
+  )
+}
 
 const Container = styled.div`
   width: 100vw;
@@ -95,8 +252,6 @@ const AddWorkspace = styled.div`
     transform: scale(1.2);
   }
 `
-
-
 
 const Right = styled.div`
   flex: 6;
@@ -259,6 +414,11 @@ const ToDoDetail = styled.div`
   width: 50%;
   height: 80%;
   display: none;
+
+  @media screen and (max-width: 468px) {
+    width: 85%;
+    height: 50%;
+  }
 `
 
 
@@ -288,12 +448,24 @@ const CloseButton = styled.div`
     height: 27px;
     justify-content: flex-end;
   }
+
+  @media screen and (max-width: 468px) {
+    width: 96%;
+    img{
+      width: 23px;
+      height: 23px;
+    }
+  }
 `
 const Forms = styled.div`
   padding: 0px 75px;
   width: auto;
   height: auto;
   background-color: #25273C;
+
+  @media screen and (max-width: 468px) {
+    padding: 0px 30px;
+  }
 `
 
 const Detail = styled.div`
@@ -321,6 +493,12 @@ const Detail = styled.div`
     width: 90%;
     padding: 5px 20px;
   }
+
+  @media screen and (max-width: 468px) {
+    h1{
+      font-size: 20px;
+    }
+  }
 `
 
 const SaveButton = styled.div`
@@ -346,127 +524,14 @@ const SaveButton = styled.div`
       background-color: #4477cf;
     }
   }
+
+  @media screen and (max-width: 468px) {
+    button{
+      height: 50px;
+      width: 150px;
+      font-size: 16px;
+    }
+  }
 `
-
-
-const Home = () => {
-
-
-  return (
-    <Container>
-      <Wrapper>
-        <SideBar>
-          <Title>WORKSPACE</Title>
-
-          <Workspace active="true">
-            School
-            <img src="/images/close.png" />
-          </Workspace>
-
-          <Workspace active="false">
-            Work
-            <img src="/images/close.png" />
-          </Workspace>
-
-          <Workspace active="false">
-            Compra
-            <img src="/images/close.png" />
-          </Workspace>
-
-          <AddWorkspace>
-            <AddCircleIcon style={{ marginBottom: "10px", opacity: "0.35", fontSize: "30px" }} />
-          </AddWorkspace>
-        </SideBar>
-
-        <Right>
-          <TitleWS>School</TitleWS>
-          <ToDo>
-            <CheckMark />
-            <ToDoInput>
-              <ToDoForm>
-                <input placeholder="Crea una nueva tarea..." />
-              </ToDoForm>
-            </ToDoInput>
-          </ToDo>
-
-          <ToDoItemsWrapper>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 1
-                </span>
-              </TextWrapper>
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
-
-          <ToDoItemsWrapper>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 2
-                </span>
-              </TextWrapper>
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
-
-          <ToDoItemsWrapper>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 3
-                </span>
-              </TextWrapper>
-
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
-
-          <ToDoDetail>
-            <ToDoDetailWrapper>
-              <CloseButton>
-                <img src="/images/close.png" />
-              </CloseButton>
-              <Forms>
-                <Detail>
-                  <h1>Title: </h1>
-                  <input placeholder="task1" />
-                </Detail>
-                <Detail>
-                  <h1>Description: </h1>
-                  <textarea placeholder="Description" />
-                </Detail>
-                <Detail>
-                  <h1>Link: </h1>
-                  <input placeholder="raidr.dev" />
-                </Detail>
-                <Detail>
-                  <h1>Date: </h1>
-                  <input placeholder="29/10/2021" />
-                </Detail>
-                <SaveButton>
-                  <button type="submit">SAVE</button>
-                </SaveButton>
-              </Forms>
-            </ToDoDetailWrapper>
-          </ToDoDetail>
-        </Right>
-      </Wrapper>
-    </Container>
-  )
-}
 
 export default Home

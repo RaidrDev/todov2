@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import Header from '../components/Header'
-import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import app from "../firebase"
 import { useHistory } from 'react-router'
+import {
+  setUserLogin,
+} from '../redux/userSlice';
+import { useDispatch } from 'react-redux';
 
 const auth = getAuth(app);
 
@@ -295,18 +299,20 @@ const LoginButton = styled.button`
 
 
 const Register = () => {
-
+  const dispatch = useDispatch();
   const history = useHistory();
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in, see docs for a list of available properties
-      // https://firebase.google.com/docs/reference/js/firebase.User
-      history.push("/");
-    } else {
-      // User is signed out
-    }
-  });
+  useEffect(() => {
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        dispatch(setUserLogin({
+          name: user.displayName,
+          email: user.email,
+        }))
+        history.push("/");
+      }
+    })
+  }, [history, dispatch])
 
   const SignInWithPopup = () => {
     const provider = new GoogleAuthProvider();
@@ -317,6 +323,10 @@ const Register = () => {
         const token = credential.accessToken;
         // The signed-in user info.
         const user = result.user;
+        dispatch(setUserLogin({
+          name: user.displayName,
+          email: user.email,
+        }))
         history.push("/");
       }).catch((error) => {
         const errorMessage = error.message;
@@ -333,6 +343,10 @@ const Register = () => {
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        dispatch(setUserLogin({
+          name: user.displayName,
+          email: user.email,
+        }))
         history.push("/");
       })
       .catch((error) => {
