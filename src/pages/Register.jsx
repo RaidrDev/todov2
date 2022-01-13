@@ -28,7 +28,7 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
+  margin-top: 0px;
   margin-bottom: 50px;
   border-right: 1px solid white;
 
@@ -38,14 +38,15 @@ const Left = styled.div`
 `
 
 const Title = styled.h1`
-  margin-top: 100px;
+  margin-top: 30px;
   font-weight: 100;
-  font-size: 50px;
+  font-size: 44px;
 `
 
 const Desc = styled.p`
   margin-top: 20px;
   width: 75%;
+  font-size: 14px;
   font-weight: 200;
 `
 
