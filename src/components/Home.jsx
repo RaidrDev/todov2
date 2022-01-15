@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import app from "../firebase"
@@ -7,7 +7,7 @@ import {
 } from '../redux/userSlice';
 import { getFirestore, collection, getDocs, where, query } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -15,25 +15,50 @@ const auth = getAuth(app);
 
 const Home = () => {
 
+  const dispatch = useDispatch();
   const [tasks, setTasks] = useState([]);
+  const [ws, setWorkspace] = useState([]);
+  const [wsActive, setWorkspaceActive] = useState();
   const userEmail = useSelector(selectUserEmail);
 
-  getTasks("School");
 
-  async function getTasks(workspace) {
-    const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", workspace));
+  useEffect(() => {
+    getWorkspace(userEmail)
 
-    const querySnapshot = await getDocs(q);
-    let tasks = [];
-    querySnapshot.forEach((doc) => {
-      tasks.push({
-        id: doc.id,
-        ...doc.data()
+    async function getWorkspace(email) {
+      const q = query(collection(db, "tasks"), where("email", "==", userEmail));
+      const querySnapshot = await getDocs(q);
+      let workspaces = [];
+      querySnapshot.forEach((doc) => {
+        workspaces.push(doc.data().workspace)
       })
-      console.log(tasks);
-    })
-  }
 
+      const table = {};
+      const workspace = workspaces.filter((index) => {
+        return table.hasOwnProperty(index) ? false : (table[index] = true);
+      })
+
+      const workspaceOrder = workspace.sort()
+      setWorkspace(workspaceOrder);
+      setWorkspaceActive(workspaceOrder[0]);
+    }
+
+    getTasks(wsActive)
+
+    async function getTasks(workspace) {
+      const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", workspace));
+      const querySnapshot = await getDocs(q);
+      let tasks = [];
+      querySnapshot.forEach((doc) => {
+        tasks.push({
+          id: doc.id,
+          ...doc.data()
+        })
+      })
+      setTasks(tasks)
+    }
+
+  }, [userEmail, wsActive]);
 
   const handleOpen = () => {
     document.getElementById("detail").style.display = "flex";
@@ -48,21 +73,14 @@ const Home = () => {
       <Wrapper>
         <SideBar>
           <Title>WORKSPACE</Title>
-
-          <Workspace active="true">
-            School
-            <img src="/images/close.png" />
-          </Workspace>
-
-          <Workspace active="false">
-            Work
-            <img src="/images/close.png" />
-          </Workspace>
-
-          <Workspace active="false">
-            Compra
-            <img src="/images/close.png" />
-          </Workspace>
+          {ws &&
+            ws.map((item) => (
+              <Workspace active="false">
+                {item}
+                <img src="/images/close.png" />
+              </Workspace>
+            ))
+          }
 
           <AddWorkspace>
             <AddCircleIcon style={{ marginBottom: "10px", opacity: "0.35", fontSize: "30px" }} />
@@ -70,7 +88,7 @@ const Home = () => {
         </SideBar>
 
         <Right>
-          <TitleWS>School</TitleWS>
+          <TitleWS>{wsActive}</TitleWS>
           <ToDo>
             <CheckMark />
             <ToDoInput>
@@ -80,51 +98,25 @@ const Home = () => {
             </ToDoInput>
           </ToDo>
 
-          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 1
-                </span>
-              </TextWrapper>
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
+          {tasks &&
+            tasks.map((item) => (
+              <ToDoItemsWrapper id="todo" onClick={handleOpen}>
+                <ToDoItem>
+                  <CheckMarkItem />
+                  <TextWrapper>
+                    <span>
+                      {item.title}
+                    </span>
+                  </TextWrapper>
+                  <IconsWrapper>
+                    <img src="/images/link.png" alt="" />
+                    <img src="/images/close.png" alt="" />
+                  </IconsWrapper>
+                </ToDoItem>
+              </ToDoItemsWrapper>
+            ))
+          }
 
-          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 2
-                </span>
-              </TextWrapper>
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
-
-          <ToDoItemsWrapper id="todo" onClick={handleOpen}>
-            <ToDoItem>
-              <CheckMarkItem />
-              <TextWrapper>
-                <span>
-                  task 3
-                </span>
-              </TextWrapper>
-
-              <IconsWrapper>
-                <img src="/images/link.png" alt="" />
-                <img src="/images/close.png" alt="" />
-              </IconsWrapper>
-            </ToDoItem>
-          </ToDoItemsWrapper>
 
           <ToDoDetail id="detail">
             <ToDoDetailWrapper>
@@ -226,16 +218,19 @@ const Workspace = styled.button`
   
   &:hover{
     background-color: #25273C;
+    
+    img{
+      opacity: 0.35;
+    }
   }
 
   img{
     display: flex;
-    align-items: center;
     width: 18px;
-    margin-left: 10px;
+    margin-left: 40px;
     border-radius: 50%;
     background-color: #25273C;
-    opacity: 0.35;
+    opacity: 0;
   }
 `
 
@@ -320,11 +315,6 @@ const CheckMark = styled.div`
   justify-content: center;
   align-items: center;
 
-  &:hover{
-    border-color: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%);
-    background: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%); 
-  }
-
   @media screen and (max-width: 468px){
     height: 20px;
     width: 20px;
@@ -333,7 +323,12 @@ const CheckMark = styled.div`
 
 const CheckMarkItem = styled(CheckMark)`
   height: 20px;
-  width: 30px;
+  width: 34px;
+
+  &:hover{
+    border-color: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%);
+    background: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%); 
+  }
 
   @media screen and (max-width: 468px){
     height: 20px;
@@ -361,7 +356,7 @@ const ToDoItem = styled.div`
   background-color: #25273C;
   padding: 0px 15px;
   border-radius: 10px;
-  height: 70px;
+  height: 60px;
   text-align: center;
   align-items: center;
   padding: 0px 15px;
@@ -474,10 +469,11 @@ const Detail = styled.div`
 
   h1 {
     background-color: #25273C;
+    font-size: 20px;
   }
 
   input {
-    height: 40px;
+    height: 30px;
     border: none;
     outline: none;
     border-radius: 5px;
@@ -487,7 +483,7 @@ const Detail = styled.div`
 
   textarea {
     border: none;
-    height: 150px;
+    height: 100px;
     outline: none;
     border-radius: 5px;
     width: 90%;
@@ -509,7 +505,7 @@ const SaveButton = styled.div`
 
   button{
     cursor: pointer;
-    margin-top: 20px;
+    margin-top: 10px;
     width: 200px;
     height: 70px;
     border-radius: 40px;
