@@ -5,7 +5,7 @@ import app from "../firebase"
 import {
   selectUserEmail,
 } from '../redux/userSlice';
-import { getFirestore, collection, getDocs, where, query } from 'firebase/firestore'
+import { getFirestore, collection, getDocs, where, query, addDoc, setDoc, doc, deleteDoc } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -19,6 +19,7 @@ const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [ws, setWorkspace] = useState([]);
   const [wsActive, setWorkspaceActive] = useState();
+  const [count, setCount] = useState(0);
   const userEmail = useSelector(selectUserEmail);
 
 
@@ -40,7 +41,9 @@ const Home = () => {
 
       const workspaceOrder = workspace.sort()
       setWorkspace(workspaceOrder);
-      setWorkspaceActive(workspaceOrder[0]);
+      if (ws.length === 0) {
+        setWorkspaceActive(workspaceOrder[0]);
+      }
     }
 
     getTasks(wsActive)
@@ -50,23 +53,92 @@ const Home = () => {
       const querySnapshot = await getDocs(q);
       let tasks = [];
       querySnapshot.forEach((doc) => {
-        tasks.push({
-          id: doc.id,
-          ...doc.data()
-        })
+        if (doc.data().title != "1234567898765432123456789") {
+          tasks.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        }
       })
       setTasks(tasks)
     }
 
-  }, [userEmail, wsActive]);
+  }, [userEmail, wsActive, ws.length, count]);
 
-  const handleOpen = () => {
+
+
+
+  const handleOpen = (event) => {
     document.getElementById("detail").style.display = "flex";
+
+    tasks.map((item) => {
+      if (event.target.id === item.title) {
+        document.getElementById("titleDetail").placeholder = item.title;
+
+        if (item.desc) {
+          document.getElementById("descDetail").placeholder = item.desc;
+        } else {
+          document.getElementById("descDetail").placeholder = "Description";
+        }
+      }
+    })
+  }
+
+  const handleOpenWs = () => {
+    document.getElementById("addWs").style.display = "flex";
   }
 
   const handleClose = () => {
     document.getElementById("detail").style.display = "none";
   }
+
+  const handleCloseWs = () => {
+    document.getElementById("addWs").style.display = "none";
+  }
+
+
+  const handleChangeWSActive = (event) => {
+    setWorkspaceActive(event.target.id)
+    document.getElementById("detail").style.display = "none";
+    document.getElementById(event.target.id).setAttribute("active", "true")
+  }
+
+  async function handleNewTask(event) {
+    event.preventDefault();
+    const title = document.getElementById("newTask").value;
+
+    const docRef = await addDoc(collection(db, "tasks"), {
+      title: title,
+      workspace: wsActive,
+      email: userEmail,
+    });
+    document.getElementById("newTask").value = ""
+    setCount(count + 1);
+  }
+
+  async function handleDeleteTask(event) {
+    event.stopPropagation();
+    await deleteDoc(doc(db, "tasks", event.target.id))
+    setCount(count + 1);
+  }
+
+
+  async function handleNewWorkspace(event) {
+    event.preventDefault();
+    const wsName = document.getElementById("inputWs").value
+
+    const docRef = await addDoc(collection(db, "tasks"), {
+      title: "1234567898765432123456789",
+      workspace: wsName,
+      email: userEmail,
+    });
+
+    handleCloseWs();
+    setCount(count + 1);
+    setWorkspaceActive(wsName);
+    document.getElementById("inputWs").value = "";
+  }
+
 
   return (
     <Container>
@@ -75,16 +147,24 @@ const Home = () => {
           <Title>WORKSPACE</Title>
           {ws &&
             ws.map((item) => (
-              <Workspace active="false">
+              <Workspace active={(item === wsActive) ? "true" : "false"} id={item} onClick={handleChangeWSActive} >
                 {item}
                 <img src="/images/close.png" />
               </Workspace>
             ))
           }
 
-          <AddWorkspace>
+          <AddWorkspace onClick={handleOpenWs}>
             <AddCircleIcon style={{ marginBottom: "10px", opacity: "0.35", fontSize: "30px" }} />
           </AddWorkspace>
+
+          <AddNew id="addWs">
+            <AddNewWrapper>
+              <input id="inputWs" placeholder="Workspace" onSubmit={handleNewWorkspace}></input>
+              <button onClick={handleNewWorkspace}>+</button>
+              <img src="/images/close.png" onClick={handleCloseWs} />
+            </AddNewWrapper>
+          </AddNew>
         </SideBar>
 
         <Right>
@@ -92,31 +172,30 @@ const Home = () => {
           <ToDo>
             <CheckMark />
             <ToDoInput>
-              <ToDoForm>
-                <input placeholder="Crea una nueva tarea..." />
+              <ToDoForm onSubmit={handleNewTask}>
+                <input placeholder="Crea una nueva tarea..." id="newTask" />
               </ToDoForm>
             </ToDoInput>
           </ToDo>
 
           {tasks &&
             tasks.map((item) => (
-              <ToDoItemsWrapper id="todo" onClick={handleOpen}>
-                <ToDoItem>
+              <ToDoItemsWrapper id="todo" id={item.title} onClick={handleOpen}>
+                <ToDoItem id={item.title}>
                   <CheckMarkItem />
-                  <TextWrapper>
-                    <span>
+                  <TextWrapper id={item.title}>
+                    <span id={item.title}>
                       {item.title}
                     </span>
                   </TextWrapper>
                   <IconsWrapper>
                     <img src="/images/link.png" alt="" />
-                    <img src="/images/close.png" alt="" />
+                    <img src="/images/close.png" id={item.id} alt="" onClick={handleDeleteTask} />
                   </IconsWrapper>
                 </ToDoItem>
               </ToDoItemsWrapper>
             ))
           }
-
 
           <ToDoDetail id="detail">
             <ToDoDetailWrapper>
@@ -126,11 +205,11 @@ const Home = () => {
               <Forms>
                 <Detail>
                   <h1>Title: </h1>
-                  <input placeholder="task1" />
+                  <input id="titleDetail" placeholder="" />
                 </Detail>
                 <Detail>
                   <h1>Description: </h1>
-                  <textarea placeholder="Description" />
+                  <textarea id="descDetail" placeholder="Description" />
                 </Detail>
                 <Detail>
                   <h1>Link: </h1>
@@ -234,8 +313,9 @@ const Workspace = styled.button`
   }
 `
 
+
+
 const AddWorkspace = styled.div`
-  margin-top: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -245,6 +325,65 @@ const AddWorkspace = styled.div`
   &:hover{
     transition: all 500ms ease-in-out;
     transform: scale(1.2);
+  }
+`
+
+
+
+const AddNew = styled.div`
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 300px;
+  position: absolute;
+  border-radius: 10px;
+  margin-left: 10px;
+  margin-top: 50px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+  flex-direction: column;
+
+`
+
+const AddNewWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  input {
+    height: 30px;
+    border: 1px solid white;
+    outline: none;
+    border-radius: 10px;
+    width: 90%;
+    padding: 2px 20px;
+  }
+
+  button {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    margin-left: 15px;
+    border-radius: 45%;
+    background-color: #4477cf;
+    font-size: 20px;
+    border: none;
+    transition: all 350ms ease-in-out;
+
+    &:hover {
+      transition: all 350ms ease-in-out;
+      transform: scale(1.07);
+    }
+  }
+
+  img {
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+    padding: 10px;
   }
 `
 
@@ -323,7 +462,7 @@ const CheckMark = styled.div`
 
 const CheckMarkItem = styled(CheckMark)`
   height: 20px;
-  width: 34px;
+  width: 20px;
 
   &:hover{
     border-color: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%);
@@ -332,7 +471,7 @@ const CheckMarkItem = styled(CheckMark)`
 
   @media screen and (max-width: 468px){
     height: 20px;
-    width: 38px;
+    width: 20px;
   }
 `
 
@@ -386,7 +525,6 @@ const IconsWrapper = styled.div`
   justify-content: flex-end;
   align-items: center;
   border-radius: 50%;
-  margin-left: 40%;
   background-color: #25273C;
 
   img {
