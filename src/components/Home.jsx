@@ -73,12 +73,12 @@ const Home = () => {
 
     tasks.map((item) => {
       if (event.target.id === item.title) {
-        document.getElementById("titleDetail").placeholder = item.title;
+        document.getElementById("titleDetail").value = item.title;
 
         if (item.desc) {
-          document.getElementById("descDetail").placeholder = item.desc;
+          document.getElementById("descDetail").value = item.desc;
         } else {
-          document.getElementById("descDetail").placeholder = "Description";
+          document.getElementById("descDetail").value = "Description";
         }
       }
     })
@@ -196,6 +196,13 @@ const Home = () => {
               </ToDoItemsWrapper>
             ))
           }
+          <ConfirmationWindow>
+            <h1>Are you sure?</h1>
+            <Buttons>
+              <ButtonYes>Yes</ButtonYes>
+              <ButtonNo>No</ButtonNo>
+            </Buttons>
+          </ConfirmationWindow>
 
           <ToDoDetail id="detail">
             <ToDoDetailWrapper>
@@ -230,6 +237,48 @@ const Home = () => {
     </Container>
   )
 }
+
+
+const ConfirmationWindow = styled.div`
+  position: absolute;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 3;
+  margin-right: 20%;
+  width: 300px;
+  height: 150px;
+  margin-top: 100px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+
+
+  h1{
+    margin-top: -10px;
+    font-size: 20px;
+  }
+`
+
+const Buttons = styled.div`
+  display: flex;
+  margin-top: 50px;
+  
+`
+
+const ButtonYes = styled.button`
+  margin-right: 10px;
+  border: none;
+  height: 35px;
+  width: 35px;
+  cursor: pointer;
+  background-color: #3A71D1;
+  border-radius: 50px;
+
+`
+
+const ButtonNo = styled(ButtonYes)`
+    background-color: #db1e0d;
+`
 
 const Container = styled.div`
   width: 100vw;
@@ -541,6 +590,7 @@ const IconsWrapper = styled.div`
     }
   }
 `
+
 
 const ToDoDetail = styled.div`
   position: absolute;
