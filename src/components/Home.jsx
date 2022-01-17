@@ -5,17 +5,14 @@ import app from "../firebase"
 import {
   selectUserEmail,
 } from '../redux/userSlice';
-import { getFirestore, collection, getDocs, where, query, addDoc, setDoc, doc, deleteDoc } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth';
-import { useSelector, useDispatch } from 'react-redux';
+import { getFirestore, collection, getDocs, where, query, addDoc, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore'
+import { useSelector } from 'react-redux';
 
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 
 const Home = () => {
 
-  const dispatch = useDispatch();
   const [tasks, setTasks] = useState([]);
   const [ws, setWorkspace] = useState([]);
   const [wsActive, setWorkspaceActive] = useState();
@@ -53,7 +50,7 @@ const Home = () => {
       const querySnapshot = await getDocs(q);
       let tasks = [];
       querySnapshot.forEach((doc) => {
-        if (doc.data().title != "1234567898765432123456789") {
+        if (doc.data().title !== "1234567898765432123456789") {
           tasks.push({
             id: doc.id,
             ...doc.data()
@@ -67,12 +64,11 @@ const Home = () => {
 
 
 
-
   const handleOpen = (event) => {
     document.getElementById("detail").style.display = "flex";
 
     tasks.map((item) => {
-      if (event.target.id === item.title) {
+      if (event.target.id === item.title || event.target.id === "titleSpan") {
         document.getElementById("titleDetail").value = item.title;
 
         if (item.desc) {
@@ -101,7 +97,39 @@ const Home = () => {
     setWorkspaceActive(event.target.id)
     document.getElementById("detail").style.display = "none";
     document.getElementById(event.target.id).setAttribute("active", "true")
+
+    function myFunction(x) {
+      if (x.matches) {
+        document.getElementById("sidebar").style.display = "none";
+        document.getElementById("right").style.display = "flex";
+      }
+    }
+
+    var x = window.matchMedia("(max-width: 468px)");
+    myFunction(x)
   }
+
+  async function handleCompletedTask(event) {
+    event.stopPropagation();
+
+    const Ref = doc(db, "tasks", event.target.id)
+    const docSnap = await getDoc(Ref);
+
+    if (docSnap.exists()) {
+      if (docSnap.data().completed === "true") {
+        await updateDoc(Ref, {
+          completed: "false",
+        })
+      } else {
+        await updateDoc(Ref, {
+          completed: "true",
+        })
+      }
+    }
+
+    setCount(count + 1);
+  }
+
 
   async function handleNewTask(event) {
     event.preventDefault();
@@ -111,6 +139,7 @@ const Home = () => {
       title: title,
       workspace: wsActive,
       email: userEmail,
+      completed: "false",
     });
     document.getElementById("newTask").value = ""
     setCount(count + 1);
@@ -143,7 +172,7 @@ const Home = () => {
   return (
     <Container>
       <Wrapper>
-        <SideBar>
+        <SideBar id="sidebar">
           <Title>WORKSPACE</Title>
           {ws &&
             ws.map((item) => (
@@ -167,7 +196,8 @@ const Home = () => {
           </AddNew>
         </SideBar>
 
-        <Right>
+
+        <Right id="right">
           <TitleWS>{wsActive}</TitleWS>
           <ToDo>
             <CheckMark />
@@ -180,13 +210,11 @@ const Home = () => {
 
           {tasks &&
             tasks.map((item) => (
-              <ToDoItemsWrapper id="todo" id={item.title} onClick={handleOpen}>
+              < ToDoItemsWrapper id="todo" id={item.title} onClick={handleOpen} >
                 <ToDoItem id={item.title}>
-                  <CheckMarkItem />
-                  <TextWrapper id={item.title}>
-                    <span id={item.title}>
-                      {item.title}
-                    </span>
+                  <CheckMarkItem id={item.id} onClick={handleCompletedTask} active={item.completed} />
+                  <TextWrapper id={item.title} active={item.completed}>
+                    {item.title}
                   </TextWrapper>
                   <IconsWrapper>
                     <img src="/images/link.png" alt="" />
@@ -234,7 +262,7 @@ const Home = () => {
           </ToDoDetail>
         </Right>
       </Wrapper>
-    </Container>
+    </Container >
   )
 }
 
@@ -317,6 +345,7 @@ const SideBar = styled.div`
 
   @media screen and (max-width: 468px) {
     display: none;
+    width: 100vw;
   }
 `
 
@@ -359,6 +388,10 @@ const Workspace = styled.button`
     border-radius: 50%;
     background-color: #25273C;
     opacity: 0;
+
+    @media screen and (max-width: 468px) {
+      opacity: 0.35;
+    }
   }
 `
 
@@ -512,6 +545,8 @@ const CheckMark = styled.div`
 const CheckMarkItem = styled(CheckMark)`
   height: 20px;
   width: 20px;
+  border-color: ${props => props.active === "true" && "linear-gradient(135deg, #55DDFF 0%, #C058F3 100%)"};
+  background: ${props => props.active === "true" && "linear-gradient(135deg, #55DDFF 0%, #C058F3 100%)"};
 
   &:hover{
     border-color: linear-gradient(135deg, #55DDFF 0%, #C058F3 100%);
@@ -556,16 +591,14 @@ const ToDoItem = styled.div`
   }
 `
 
-const TextWrapper = styled.div`
+const TextWrapper = styled.span`
   width: 85%;
   background-color: #25273C;
   display: flex;
   align-items: center;
-
-  span{
-    margin-left: 10px;
-    background-color: #25273C;
-  }
+  text-decoration: ${props => props.active === "true" ? "line-through" : "none"};
+  opacity: ${props => props.active === "true" ? "0.5" : "1"};
+  margin-left: 10px;
 `
 
 

@@ -124,12 +124,22 @@ const Header = () => {
     });
   }
 
+  const handleOpenSideBar = () => {
+    if (document.getElementById("sidebar").style.display === "none") {
+      document.getElementById("sidebar").style.display = "flex";
+      document.getElementById("right").style.display = "none";
+    } else {
+      document.getElementById("sidebar").style.display = "none";
+      document.getElementById("right").style.display = "flex";
+    }
+  }
+
   return (
     <Container>
       <Left>
         {userEmail && <>
           <Menu>
-            <MenuIcon style={{ fontSize: "35px" }} />
+            <MenuIcon style={{ fontSize: "35px" }} onClick={handleOpenSideBar} />
           </Menu>
         </>
         }
