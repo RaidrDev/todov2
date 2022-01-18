@@ -18,6 +18,7 @@ const Home = () => {
   const [wsActive, setWorkspaceActive] = useState();
   const [count, setCount] = useState(0);
   const userEmail = useSelector(selectUserEmail);
+  let wsToDelete = "";
 
 
   useEffect(() => {
@@ -168,6 +169,34 @@ const Home = () => {
     document.getElementById("inputWs").value = "";
   }
 
+  async function handleDeleteWs(event) {
+    event.stopPropagation();
+    wsToDelete = event.target.id
+    document.getElementById("confirmation").style.display = "flex";
+
+  }
+
+  const handleNo = () => {
+    document.getElementById("confirmation").style.display = "none";
+  }
+
+
+  async function handleDeleteWsConfirmation() {
+    const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", wsToDelete));
+    const querySnapshot = await getDocs(q);
+    let ids = [];
+    querySnapshot.forEach((doc) => {
+      ids.push(doc.id);
+    })
+    for (const id of ids) {
+      await deleteDoc(doc(db, "tasks", id))
+    }
+    document.getElementById("confirmation").style.display = "none";
+    setCount(count + 1);
+
+  }
+
+
 
   return (
     <Container>
@@ -178,7 +207,7 @@ const Home = () => {
             ws.map((item) => (
               <Workspace active={(item === wsActive) ? "true" : "false"} id={item} onClick={handleChangeWSActive} >
                 {item}
-                <img src="/images/close.png" />
+                <img src="/images/close.png" id={item} onClick={handleDeleteWs} />
               </Workspace>
             ))
           }
@@ -224,11 +253,11 @@ const Home = () => {
               </ToDoItemsWrapper>
             ))
           }
-          <ConfirmationWindow>
+          <ConfirmationWindow id="confirmation">
             <h1>Are you sure?</h1>
             <Buttons>
-              <ButtonYes>Yes</ButtonYes>
-              <ButtonNo>No</ButtonNo>
+              <ButtonYes onClick={handleDeleteWsConfirmation}>Yes</ButtonYes>
+              <ButtonNo onClick={handleNo}>No</ButtonNo>
             </Buttons>
           </ConfirmationWindow>
 
