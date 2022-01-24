@@ -100,6 +100,7 @@ const Home = () => {
 
   const handleCloseWs = () => {
     document.getElementById("addWs").style.display = "none";
+    document.getElementById("inputWs").value = "";
   }
 
 
@@ -500,6 +501,7 @@ const AddNewWrapper = styled.div`
     border-radius: 10px;
     width: 90%;
     padding: 2px 20px;
+    margin-left: 10px;
   }
 
   button {
@@ -508,17 +510,13 @@ const AddNewWrapper = styled.div`
     align-items: center;
     justify-content: center;
     width: 40px;
-    margin-left: 15px;
+    margin-left: 7px;
     border-radius: 45%;
     background-color: #4477cf;
     font-size: 20px;
     border: none;
     transition: all 350ms ease-in-out;
 
-    &:hover {
-      transition: all 350ms ease-in-out;
-      transform: scale(1.07);
-    }
   }
 
   img {
