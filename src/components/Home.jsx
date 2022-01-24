@@ -17,6 +17,7 @@ const Home = () => {
   const [ws, setWorkspace] = useState([]);
   const [wsActive, setWorkspaceActive] = useState();
   const [count, setCount] = useState(0);
+  const [taskOpen, setTaskOpen] = useState();
   const userEmail = useSelector(selectUserEmail);
   let wsToDelete = "";
 
@@ -47,18 +48,20 @@ const Home = () => {
     getTasks(wsActive)
 
     async function getTasks(workspace) {
-      const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", workspace));
-      const querySnapshot = await getDocs(q);
-      let tasks = [];
-      querySnapshot.forEach((doc) => {
-        if (doc.data().title !== "1234567898765432123456789") {
-          tasks.push({
-            id: doc.id,
-            ...doc.data()
-          });
-        }
-      })
-      setTasks(tasks)
+      if (workspace) {
+        const q = query(collection(db, "tasks"), where("email", "==", userEmail), where("workspace", "==", workspace));
+        const querySnapshot = await getDocs(q);
+        let tasks = [];
+        querySnapshot.forEach((doc) => {
+          if (doc.data().title !== "1234567898765432123456789") {
+            tasks.push({
+              id: doc.id,
+              ...doc.data()
+            });
+          }
+        })
+        setTasks(tasks)
+      }
     }
 
   }, [userEmail, wsActive, ws.length, count]);
@@ -72,11 +75,16 @@ const Home = () => {
       if (event.target.id === item.title || event.target.id === "titleSpan") {
         document.getElementById("titleDetail").value = item.title;
 
-        if (item.desc) {
-          document.getElementById("descDetail").value = item.desc;
+        if (item.description) {
+          document.getElementById("descDetail").value = item.description;
         } else {
           document.getElementById("descDetail").value = "Description";
         }
+
+        if (item.link != "") {
+          document.getElementById("linkDetail").value = item.link;
+        }
+        setTaskOpen(item.id)
       }
     })
   }
@@ -87,6 +95,7 @@ const Home = () => {
 
   const handleClose = () => {
     document.getElementById("detail").style.display = "none";
+    document.getElementById("linkDetail").value = "";
   }
 
   const handleCloseWs = () => {
@@ -141,6 +150,8 @@ const Home = () => {
       workspace: wsActive,
       email: userEmail,
       completed: "false",
+      link: "",
+      description: "",
     });
     document.getElementById("newTask").value = ""
     setCount(count + 1);
@@ -196,6 +207,27 @@ const Home = () => {
 
   }
 
+  async function handleSave() {
+    const ref = doc(db, "tasks", taskOpen);
+    await updateDoc(ref, {
+      title: document.getElementById("titleDetail").value,
+      description: document.getElementById("descDetail").value,
+      link: document.getElementById("linkDetail").value,
+    });
+    setCount(count + 1);
+    document.getElementById("detail").style.display = "none";
+  }
+
+  const handleLink = (event) => {
+    event.stopPropagation();
+    tasks.map((item) => {
+      if (item.id === event.target.id) {
+        window.open("http://" + item.link, '_blank').focus();
+      }
+    })
+
+  }
+
 
 
   return (
@@ -232,7 +264,7 @@ const Home = () => {
             <CheckMark />
             <ToDoInput>
               <ToDoForm onSubmit={handleNewTask}>
-                <input placeholder="Crea una nueva tarea..." id="newTask" />
+                <input placeholder="Create a new task..." id="newTask" />
               </ToDoForm>
             </ToDoInput>
           </ToDo>
@@ -246,7 +278,9 @@ const Home = () => {
                     {item.title}
                   </TextWrapper>
                   <IconsWrapper>
-                    <img src="/images/link.png" alt="" />
+                    <IconLink active={(item.link === "") ? "false" : "true"}>
+                      <img src="/images/link.png" id={item.id} alt="" onClick={handleLink} />
+                    </IconLink>
                     <img src="/images/close.png" id={item.id} alt="" onClick={handleDeleteTask} />
                   </IconsWrapper>
                 </ToDoItem>
@@ -277,14 +311,11 @@ const Home = () => {
                 </Detail>
                 <Detail>
                   <h1>Link: </h1>
-                  <input placeholder="raidr.dev" />
+                  <input id="linkDetail" placeholder="raidr.dev" />
                 </Detail>
-                <Detail>
-                  <h1>Date: </h1>
-                  <input placeholder="29/10/2021" />
-                </Detail>
+
                 <SaveButton>
-                  <button type="submit">SAVE</button>
+                  <button type="submit" onClick={handleSave}>SAVE</button>
                 </SaveButton>
               </Forms>
             </ToDoDetailWrapper>
@@ -628,6 +659,10 @@ const TextWrapper = styled.span`
   text-decoration: ${props => props.active === "true" ? "line-through" : "none"};
   opacity: ${props => props.active === "true" ? "0.5" : "1"};
   margin-left: 10px;
+
+  @media screen and (max-width: 468px){
+    font-size: 14px;
+  }
 `
 
 
@@ -635,6 +670,7 @@ const IconsWrapper = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  margin-left: 100px;
   border-radius: 50%;
   background-color: #25273C;
 
@@ -651,13 +687,23 @@ const IconsWrapper = styled.div`
       width: 20px;
     }
   }
+
+  @media screen and (max-width: 468px){
+    margin-left: 0px;
+  }
+  
+`
+
+const IconLink = styled.div`
+  display: ${props => props.active === "true" ? "flex" : "none"};;
+  background-color: #25273C;
 `
 
 
 const ToDoDetail = styled.div`
   position: absolute;
   width: 50%;
-  height: 80%;
+  height: 65%;
   display: none;
 
   @media screen and (max-width: 468px) {
