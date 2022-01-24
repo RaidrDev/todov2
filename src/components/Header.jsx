@@ -124,13 +124,17 @@ const Header = () => {
     });
   }
 
+  var open = false;
+
   const handleOpenSideBar = () => {
-    if (document.getElementById("sidebar").style.display === "none") {
+    if (!open) {
       document.getElementById("sidebar").style.display = "flex";
       document.getElementById("right").style.display = "none";
+      open = !open;
     } else {
       document.getElementById("sidebar").style.display = "none";
       document.getElementById("right").style.display = "flex";
+      open = !open;
     }
   }
 
