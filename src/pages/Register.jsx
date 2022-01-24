@@ -411,8 +411,7 @@ const Register = () => {
       <Wrapper>
         <Left>
           <Title>CREATE YOUR OWN NOTES!</Title>
-          <Desc>Lorem ipsum dolor sit amet consectetur adipisicing elit. In quam veritatis veniam ducimus non magni
-            sint dolores harum, maiores odio placeat voluptas officia. Mollitia maiores nihil ipsum impedit expedita deleniti!</Desc>
+          <Desc>You can create workspaces and add tasks to these workspaces so you don't forget anything you have To-Do!</Desc>
           <Img>
             <img src="/images/preview-web.png" />
           </Img>
